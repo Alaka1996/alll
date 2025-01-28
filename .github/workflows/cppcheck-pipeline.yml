@@ -30,7 +30,7 @@ jobs:
     # Step 4: Run Cppcheck (Errors in Logs)
     - name: Run Cppcheck Static Analysis
       run: |
-        cppcheck --enable=all --inconclusive --std=c11 --template="{file}:{line}: {severity}: {message}" src/*.c || exit 1
+        cppcheck --enable=all --inconclusive --std=c11 --template="{file}:{line}: {severity}: {message}" main.c || exit 1
 
     # Step 5: Build the Project
     - name: Build the Project
