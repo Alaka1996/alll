@@ -1,24 +1,50 @@
-name: C Code Analysis
+name: Build, Test, and Static Analysis
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
 
 jobs:
-  build-and-analyze:
+  static-analysis:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    # Step 1: Checkout the Code
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install cppcheck
+    # Step 2: Install Cppcheck
+    - name: Install Cppcheck
+      run: sudo apt-get update && sudo apt-get install -y cppcheck
 
-    - name: Build and analyze code
+    # Step 3: Run Cppcheck
+    - name: Run Cppcheck Static Analysis
       run: |
-        make
-        cat cppcheck.xml # Optional: View the XML output of cppcheck
+        cppcheck --enable=all --inconclusive --std=c11 main.c 2> cppcheck-results.txt
+        if [ -s cppcheck-results.txt ]; then
+          echo "Cppcheck found issues:"
+          cat cppcheck-results.txt
+          exit 1
+        else
+          echo "No issues found by Cppcheck."
+        fi
+
+    # Step 4: Install GCC and Make
+    - name: Install GCC and Make
+      run: sudo apt-get install -y build-essential
+
+    # Step 5: Build the Project
+    - name: Build the Project
+      run: |
+        make clean
+        make VERBOSE=1
+
+    # Step 6: Run the Program (Optional)
+    - name: Run Main Program
+      run: ./main > program-output.txt
+
+    # Step 7: Display Program Output
+    - name: Display Program Output
+      run: cat program-output.txt
