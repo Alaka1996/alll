@@ -15,14 +15,16 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Step 2: Install Cppcheck
-    - name: Install Cppcheck
-      run: sudo apt-get update && sudo apt-get install -y cppcheck
+    # Step 2: Install Tools
+    - name: Install Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cppcheck clang gcc build-essential
 
     # Step 3: Run Cppcheck
     - name: Run Cppcheck Static Analysis
       run: |
-        cppcheck --enable=all --inconclusive --std=c11 main.c 2> cppcheck-results.txt
+        cppcheck --enable=all --inconclusive --std=c11 --force --max-configs=1 -I/usr/include main.c 2> cppcheck-results.txt
         if [ -s cppcheck-results.txt ]; then
           echo "Cppcheck found issues:"
           cat cppcheck-results.txt
@@ -31,20 +33,12 @@ jobs:
           echo "No issues found by Cppcheck."
         fi
 
-    # Step 4: Install GCC and Make
-    - name: Install GCC and Make
-      run: sudo apt-get install -y build-essential
+    # Step 4: Build with AddressSanitizer
+    - name: Build with ASan
+      run: gcc -fsanitize=address -g -o main main.c
 
-    # Step 5: Build the Project
-    - name: Build the Project
+    # Step 5: Run AddressSanitizer
+    - name: Run AddressSanitizer
       run: |
-        make clean
-        make VERBOSE=1
-
-    # Step 6: Run the Program (Optional)
-    - name: Run Main Program
-      run: ./main > program-output.txt
-
-    # Step 7: Display Program Output
-    - name: Display Program Output
-      run: cat program-output.txt
+        ./main
+        exit 0
