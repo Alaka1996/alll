@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  cppcheck:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Validate directory structure
+      run: |
+        ls -R .
+
+    - name: Install Cppcheck
+      run: sudo apt-get install cppcheck
+
+    - name: Run Cppcheck
+      run: cppcheck --enable=all --inconclusive --std=c11 --template="{file}:{line}: {severity}: {message}" src/
