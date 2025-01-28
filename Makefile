@@ -1,5 +1,5 @@
 all:
-        gcc -o main main.c
+        gcc -o myprogram main.c
         cppcheck --enable=all main.c
 
 clean:
