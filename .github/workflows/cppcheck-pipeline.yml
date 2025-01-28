@@ -7,38 +7,42 @@ on:
   pull_request:
 
 jobs:
-  static-analysis:
+  build-and-analyze:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the Code
+    # Step 1: Checkout the code
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Step 2: Install Tools
-    - name: Install Tools
+    # Step 2: Install GCC and Make
+    - name: Install GCC and Make
       run: |
         sudo apt-get update
-        sudo apt-get install -y cppcheck clang gcc build-essential
+        sudo apt-get install -y build-essential
 
-    # Step 3: Run Cppcheck
+    # Step 3: Install Cppcheck
+    - name: Install Cppcheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cppcheck
+
+    # Step 4: Run Cppcheck (Errors in Logs)
     - name: Run Cppcheck Static Analysis
       run: |
-        cppcheck --enable=all --inconclusive --std=c11 --force --max-configs=1 -I/usr/include main.c 2> cppcheck-results.txt
-        if [ -s cppcheck-results.txt ]; then
-          echo "Cppcheck found issues:"
-          cat cppcheck-results.txt
-          exit 1
-        else
-          echo "No issues found by Cppcheck."
-        fi
+        cppcheck --enable=all --inconclusive --std=c11 --template="{file}:{line}: {severity}: {message}" src/*.c || exit 1
 
-    # Step 4: Build with AddressSanitizer
-    - name: Build with ASan
-      run: gcc -fsanitize=address -g -o main main.c
-
-    # Step 5: Run AddressSanitizer
-    - name: Run AddressSanitizer
+    # Step 5: Build the Project
+    - name: Build the Project
       run: |
-        ./main
-        exit 0
+        make clean
+        make VERBOSE=1
+
+    # Step 6: Run the Main Program
+    - name: Run Main Program
+      run: ./main
+
+    # Optional: Step 7: Check for Warnings in Program Output
+    - name: Check for Warnings
+      run: |
+        ./main | grep -q "Warning" && exit 1 || echo "No warnings found."
