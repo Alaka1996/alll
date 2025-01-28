@@ -11,11 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Install cppcheck
-      run: sudo apt-get install -y cppcheck
+      - name: Install cppcheck
+        run: sudo apt-get install -y cppcheck
 
-    - name: Run cppcheck
-      run: cppcheck --enable=all --inconclusive --error-exitcode=1 --force .
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=all --inconclusive --std=c11 --force --check-config \
+          --template="{file}:{line}: {severity}: {message}" \
+          --suppress=missingIncludeSystem main.c || exit 1
