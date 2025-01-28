@@ -1,3 +1,5 @@
+name: Cppcheck Pipeline
+
 on:
   push:
     branches:
@@ -17,7 +19,7 @@ jobs:
         ls -R .
 
     - name: Install Cppcheck
-      run: sudo apt-get install cppcheck
+      run: sudo apt-get update && sudo apt-get install -y cppcheck
 
     - name: Run Cppcheck
       run: cppcheck --enable=all --inconclusive --std=c11 --template="{file}:{line}: {severity}: {message}" src/
