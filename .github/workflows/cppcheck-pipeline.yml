@@ -19,7 +19,7 @@ jobs:
       - name: Run cppcheck and generate XML report
         run: cppcheck --xml --xml-version=2 main.c 2> cppcheck_report.xml
       - name: Upload cppcheck report as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3  # Updated to v3
         with:
           name: cppcheck-report
           path: cppcheck_report.xml
