@@ -13,5 +13,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Install cppcheck
         run: sudo apt-get install cppcheck
-      - name: Run cppcheck
-        run: cppcheck --enable=all main.c
+      - name: Run cppcheck and generate XML report
+        run: cppcheck --xml --xml-version=2 main.c 2> cppcheck_report.xml
+      - name: Upload cppcheck report as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: cppcheck-report
+          path: cppcheck_report.xml
