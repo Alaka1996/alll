@@ -1,24 +1,39 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
-
-# Target executable name
-TARGET = sensor_app
+CXX = g++
+CFLAGS = -Wall -Wextra -O2 -fsanitize=address -fno-omit-frame-pointer
+CXXFLAGS = -Wall -Wextra -O2 -std=c++11 -fsanitize=address -fno-omit-frame-pointer
 
 # Source files
-SRC = main.c
+SRCS = main.c
+TEST_SRCS = test_main.cpp
+
+# Target executable
+TARGET = my_program
+TEST_TARGET = my_program_test
 
 # Default target
 all: $(TARGET)
 
-# Build the target executable
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
+# Build the main program
+$(TARGET): $(SRCS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS)
 
-# Clean the build artifacts
+# Build the test program
+$(TEST_TARGET): $(SRCS) $(TEST_SRCS)
+	$(CXX) $(CXXFLAGS) -o build/test/$(TEST_TARGET) $(SRCS) $(TEST_SRCS)
+
+# Run cppcheck
+cppcheck:
+	cppcheck --enable=all --inconclusive --std=c99 $(SRCS) $(TEST_SRCS)
+
+# Run AddressSanitizer on the program
+asan: $(SRCS)
+	$(CC) $(CFLAGS) -o $(TARGET)_asan $(SRCS)
+	./$(TARGET)_asan
+
+# Clean up
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) build/test/$(TEST_TARGET) $(TARGET)_asan
 
-# Run the program
-run: $(TARGET)
-	./$(TARGET)
+.PHONY: all cppcheck clean asan
