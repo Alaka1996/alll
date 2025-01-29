@@ -1,25 +1,58 @@
-name: CI Workflow
+name: Build, Test, and Static Analysis
 
 on:
   push:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
-  cppcheck:
+  build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install cppcheck
-        run: sudo apt-get install cppcheck
-      - name: Run cppcheck and generate XML report
-        run: cppcheck --xml --xml-version=2 main.c 2> cppcheck_report.xml
-      - name: Upload cppcheck report as artifact
-        uses: actions/upload-artifact@v3  # Updated to v3
-        with:
-          name: cppcheck-report
-          path: cppcheck_report.xml
+    # Step 1: Checkout the code
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Step 2: Install Build Essentials and cppcheck
+    - name: Install GCC, Make, and cppcheck
+      run: sudo apt-get update && sudo apt-get install -y build-essential cppcheck
+
+    # Step 3: Run Cppcheck Static Analysis
+    - name: Run Cppcheck Static Analysis
+      run: |
+        make cppcheck
+
+    # Step 4: Build the Project (Main Program)
+    - name: Build the Project
+      run: |
+        make clean
+        make VERBOSE=1
+
+    # Step 5: Run AddressSanitizer
+    - name: Run AddressSanitizer
+      run: |
+        make asan
+
+    # Step 6: Run Unit Tests (If any)
+    - name: Run Unit Tests (optional)
+      run: |
+        # You can add test commands here if required
+        # Example: make test
+
+    # Step 7: Run the Main Program
+    - name: Run Main Program
+      run: ./my_program > test_output.txt
+
+    # Step 8: Display Program Output
+    - name: Display Program Output
+      run: cat test_output.txt
+
+    # Step 9: Check for Warnings
+    - name: Check for Warnings
+      run: |
+        if grep -q "Warning:" test_output.txt; then
+          echo "Warnings found in output!"
+          exit 1
+        fi
